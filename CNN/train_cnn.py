@@ -16,14 +16,23 @@ import mediapipe as mp
 
 ###############
 # Path for exported data, numpy arrays
-DATA_PATH = os.path.join('MP_Data')
+# DATA_PATH = os.path.join('MP_Data')
+DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
 
 # Actions that we try to detect
-actions = np.array(['default', 'foreheadhot', 'gichim', 'happy',
-                   'hi', 'medicine', 'nose', 'sick', 'thanks', 'the end'])
 
+# actions = np.array(['blood', 'brain', 'come', 'default', 'digest', 'eat', 'foreheadhot', 'from',
+#                     'gichim', 'happy', 'hi', 'lack', 'medicine', 'NO', 'sick', 'surgery',
+#                     'thanks', 'when'])
+actions = np.array(os.listdir(
+    "C:/Users/LCM/Desktop/sign data/MP_DATA"))
+# actions = np.array(["bruise"])
+print(actions)
 # Thirty videos worth of data
-no_sequences = 30
+users = 3
+
+no_sequences = 30 * users
+
 
 # Videos are going to be 30 frames in length
 sequence_length = 30
@@ -32,6 +41,7 @@ sequence_length = 30
 start_folder = 30
 ###############
 
+temp = []
 #
 label_map = {label: num for num, label in enumerate(actions)}
 label_map
@@ -40,17 +50,23 @@ sequences, labels = [], []
 for action in actions:
     for sequence in range(no_sequences):
         window = []
+        temp = []
         for frame_num in range(sequence_length):
+
             res = np.load(os.path.join(DATA_PATH, action, str(
                 sequence), "{}.npy".format(frame_num)))
+
+            # print(user)
             window.append(res)
         sequences.append(window)
         labels.append(label_map[action])
-
+print(np.array(sequences).shape)
 sequences = np.array(sequences).reshape(
     no_sequences * actions.size, 30, 1662, 1)
-np.array(labels).shape
+print(np.array(sequences).shape)
 
+print(np.array(labels).shape)
+print(labels)
 X = np.array(sequences)
 print(X.shape)
 
@@ -67,7 +83,7 @@ tb_callback = TensorBoard(log_dir=log_dir)
 
 model = Sequential()
 
-model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(30, 1662, 1)))
+model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2), padding='same'))
 model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
 model.add(MaxPooling2D((2, 2), padding='same'))
@@ -135,15 +151,15 @@ model.compile(optimizer='Adam', loss='categorical_crossentropy',
 # model.compile(loss='categorical_crossentropy',
 #               optimizer="Adam", metrics=['categorical_accuracy'])
 
-model.fit(X_train, y_train, epochs=2000, callbacks=[tb_callback])
+model.fit(X_train, y_train, epochs=700, callbacks=[tb_callback])
 
 model.summary()
 
 
 # 9. Save Weights
-model.save('test_cnn_test.h5')
-del model
-model = load_model('test_cnn_test.h5')
+model.save('20220606_90.h5')
+
+model = load_model('20220606_90.h5')
 
 
 # 10. Evaluation using Confusion Matrix and Accuracy
