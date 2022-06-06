@@ -14,16 +14,12 @@ from matplotlib import pyplot as plt
 import time
 import mediapipe as mp
 
-###############
 # Path for exported data, numpy arrays
 # DATA_PATH = os.path.join('MP_Data')
 DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
 
 # Actions that we try to detect
 
-# actions = np.array(['blood', 'brain', 'come', 'default', 'digest', 'eat', 'foreheadhot', 'from',
-#                     'gichim', 'happy', 'hi', 'lack', 'medicine', 'NO', 'sick', 'surgery',
-#                     'thanks', 'when'])
 actions = np.array(os.listdir(
     "C:/Users/LCM/Desktop/sign data/MP_DATA"))
 # actions = np.array(["bruise"])
@@ -52,11 +48,8 @@ for action in actions:
         window = []
         temp = []
         for frame_num in range(sequence_length):
-
             res = np.load(os.path.join(DATA_PATH, action, str(
                 sequence), "{}.npy".format(frame_num)))
-
-            # print(user)
             window.append(res)
         sequences.append(window)
         labels.append(label_map[action])
@@ -77,7 +70,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 print(X_test.shape)
 print(y_test.shape)
 
-#
 log_dir = os.path.join('Logs')
 tb_callback = TensorBoard(log_dir=log_dir)
 
@@ -105,51 +97,6 @@ model.add(Dense(actions.shape[0], activation='softmax'))
 
 model.compile(optimizer='Adam', loss='categorical_crossentropy',
               metrics=['categorical_accuracy'])
-
-# model.add(Conv2D(input_shape=(30, 1662, 1), filters=32, kernel_size=(
-#     3, 3), strides=(1, 1), padding='same'))
-# model.add(BatchNormalization())
-# model.add(Activation('relu'))
-# model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(
-#     1, 1), padding='same'))
-# # 1x1 convolution
-# model.add(BatchNormalization())
-# model.add(Activation('relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-# model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(
-#     1, 1), padding='same'))
-# # 1x1 convolution
-# model.add(BatchNormalization())
-# model.add(Activation('relu'))
-# model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(
-#     1, 1), padding='same'))
-# # 1x1 convolution
-# model.add(BatchNormalization())
-# model.add(Activation('relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-# model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(
-#     1, 1), padding='same'))
-# # 1x1 convolution
-# model.add(BatchNormalization())
-# model.add(Activation('relu'))
-# model.add(Conv2D(filters=64, kernel_size=(3, 3), strides=(
-#     1, 1), padding='same'))
-# # 1x1 convolution
-# model.add(BatchNormalization())
-# model.add(Activation('relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
-
-# # prior layer should be flattend to be connected to dense layers
-# model.add(Flatten())
-# # dense layer with 50 neurons
-# model.add(Dense(64, activation='relu'))
-# model.add(Dropout(0.5))
-# # final layer with 10 neurons to classify the instances
-# model.add(Dense(actions.shape[0], activation='softmax'))
-
-
-# model.compile(loss='categorical_crossentropy',
-#               optimizer="Adam", metrics=['categorical_accuracy'])
 
 model.fit(X_train, y_train, epochs=700, callbacks=[tb_callback])
 
