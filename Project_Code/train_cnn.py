@@ -14,33 +14,24 @@ from matplotlib import pyplot as plt
 import time
 import mediapipe as mp
 
-# Path for exported data, numpy arrays
-# DATA_PATH = os.path.join('MP_Data')
+###############
 DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
 
-# Actions that we try to detect
 
 actions = np.array(os.listdir(
     "C:/Users/LCM/Desktop/sign data/MP_DATA"))
-# actions = np.array(["bruise"])
 print(actions)
-# Thirty videos worth of data
+
 users = 3
 
 no_sequences = 30 * users
 
-
-# Videos are going to be 30 frames in length
+# 30 frames Videos
 sequence_length = 30
-
-# Folder start
-start_folder = 30
 ###############
 
-temp = []
-#
+
 label_map = {label: num for num, label in enumerate(actions)}
-label_map
 
 sequences, labels = [], []
 for action in actions:
@@ -48,6 +39,7 @@ for action in actions:
         window = []
         temp = []
         for frame_num in range(sequence_length):
+
             res = np.load(os.path.join(DATA_PATH, action, str(
                 sequence), "{}.npy".format(frame_num)))
             window.append(res)
@@ -69,6 +61,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
 print(X_test.shape)
 print(y_test.shape)
+
 
 log_dir = os.path.join('Logs')
 tb_callback = TensorBoard(log_dir=log_dir)
@@ -103,13 +96,11 @@ model.fit(X_train, y_train, epochs=700, callbacks=[tb_callback])
 model.summary()
 
 
-# 9. Save Weights
+# Save model
 model.save('20220606_90.h5')
 
 model = load_model('20220606_90.h5')
 
-
-# 10. Evaluation using Confusion Matrix and Accuracy
 yhat = model.predict(X_test)
 ytrue = np.argmax(y_test, axis=1).tolist()
 yhat = np.argmax(yhat, axis=1).tolist()
