@@ -102,16 +102,12 @@ def extract_keypoints(results):
     return np.concatenate([pose, face, lh, rh])
 
 
-model = load_model('20220602_1.h5')
+model = load_model('20220606_90.h5')
 # res = model.predict(X_test)
 # model.load_weights('testing.h5')
 
 
 # 11. Test in Real Time
-# colors = [(245, 117, 16), (117, 245, 16), (16, 117, 245),
-#           (16, 117, 244), (16, 117, 243),
-#           (245, 117, 16), (117, 245, 16), (16, 117, 245),
-#           (16, 117, 244), (16, 117, 243)]
 colors = [(245, 117, 16) for _ in range(actions.size)]
 
 
@@ -134,7 +130,7 @@ def prob_viz(res, actions, input_frame, colors):
 sequence = []
 sentence = []
 predictions = []
-threshold = 0.9
+threshold = 0.88
 
 cap = cv2.VideoCapture(0)
 # Set mediapipe model
@@ -162,7 +158,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             predictions.append(np.argmax(res))
 
         # 3. Viz logic
-            if np.unique(predictions[-20:])[0] == np.argmax(res):
+            if np.unique(predictions[-10:])[0] == np.argmax(res):
                 if res[np.argmax(res)] > threshold:
 
                     if len(sentence) > 0:
@@ -187,7 +183,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         # cv2.resizeWindow('sign', 1000, 800)
         cv2.imshow('sign', image)
 
-        # Break gracefully
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break
     cap.release()
