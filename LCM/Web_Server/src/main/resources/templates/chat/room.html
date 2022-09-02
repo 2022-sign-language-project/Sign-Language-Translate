@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--<meta charset="utf-8">-->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+<!--<th:block th:replace="~{/layout/basic :: setContent(~{this :: content})}">-->
+  <th:block th:fragment="content">
+
+      <div class="container">
+          <video class="input_video" autoplay="autoplay"></video>
+          <canvas class="output_canvas" width="800px" height="450px"></canvas>
+      </div>
+    <div class="container">
+      <div class="col-6">
+        <h1>[[${room.name}]]</h1>
+      </div>
+      <div>
+        <div id="msgArea" class="col"></div>
+        <div class="col-6">
+          <div class="input-group mb-3">
+            <input type="text" id="msg" class="form-control">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" id="button-send">전송</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6"></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script th:inline="javascript">
+
+          $(document).ready(function(){
+             $(video).load("http://127.0.0.1:5500/video_feed");
+          });
+
+
+
+            $(document).ready(function(){
+
+              function uuidv4() {
+                return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                  (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );
+              }
+                var roomName = [[${room.name}]];
+                var roomId = [[${room.roomId}]];
+                var username = uuidv4();
+
+                console.log(roomName + ", " + roomId + ", " + username);
+
+                var sockJs = new SockJS("/stomp/chat");
+                //1. SockJS를 내부에 들고있는 stomp를 내어줌
+                var stomp = Stomp.over(sockJs);
+
+                //2. connection이 맺어지면 실행
+                stomp.connect({}, function (){
+                   console.log("STOMP Connection")
+
+                   //4. subscribe(path, callback)으로 메세지를 받을 수 있음
+                   stomp.subscribe("/sub/chat/room/" + roomId, function (chat) {
+                       var content = JSON.parse(chat.body);
+
+                       var writer = content.writer;
+                       var str = '';
+
+                       if(writer === username){
+                           str = "<div class='col-6'>";
+                           str += "<div class='alert alert-secondary'>";
+                           str += "<b>" + writer + " : " + content.message + "</b>";
+                           str += "</div></div>";
+                           $("#msgArea").append(str);
+                       }
+                       else{
+                           str = "<div class='col-6'>";
+                           str += "<div class='alert alert-warning'>";
+                           str += "<b>" + writer + " : " + content.message + "</b>";
+                           str += "</div></div>";
+                           $("#msgArea").append(str);
+                       }
+
+                       $("#msgArea").append(str);
+                   });
+
+                   //3. send(path, header, message)로 메세지를 보낼 수 있음
+                   stomp.send('/pub/chat/enter', {}, JSON.stringify({roomId: roomId, writer: username}))
+                });
+
+                $("#button-send").on("click", function(e){
+                    var msg = document.getElementById("msg");
+
+                    console.log(username + ":" + msg.value);
+                    stomp.send('/pub/chat/message', {}, JSON.stringify({roomId: roomId, message: msg.value, writer: username}));
+                    msg.value = '';
+                });
+            });
+        </script>
+      <script type="module">
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        ///
+
+        ///
+        const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        const canvasCtx = canvasElement.getContext('2d');
+
+        function onResults(results) {
+          canvasCtx.save();
+          canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+          window.onload = function(){
+                            canvasCtx.drawImage(results.segmentationMask, 0, 0, canvasElement.width, canvasElement.height);
+
+                            };
+
+          // Only overwrite existing pixels.
+          canvasCtx.globalCompositeOperation = 'source-in';
+          canvasCtx.fillStyle = '#00FF00';
+          canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+
+          // Only overwrite missing pixels.
+          canvasCtx.globalCompositeOperation = 'destination-atop';
+          canvasCtx.drawImage(
+              results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+          canvasCtx.globalCompositeOperation = 'source-over';
+          drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                         {color: '#00FF00', lineWidth: 4});
+          drawLandmarks(canvasCtx, results.poseLandmarks,
+                        {color: '#FF0000', lineWidth: 2});
+          drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
+                         {color: '#C0C0C070', lineWidth: 1});
+          drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
+                         {color: '#CC0000', lineWidth: 5});
+          drawLandmarks(canvasCtx, results.leftHandLandmarks,
+                        {color: '#00FF00', lineWidth: 2});
+          drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
+                         {color: '#00CC00', lineWidth: 5});
+          drawLandmarks(canvasCtx, results.rightHandLandmarks,
+                        {color: '#FF0000', lineWidth: 2});
+          canvasCtx.restore();
+
+        }
+
+        const holistic = new Holistic({locateFile: (file) => {
+          return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
+        }});
+        holistic.setOptions({
+          modelComplexity: 1,
+          smoothLandmarks: true,
+          enableSegmentation: true,
+          smoothSegmentation: true,
+          refineFaceLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        holistic.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+          onFrame: async () => {
+            await holistic.send({image: videoElement});
+          },
+          width: 0,
+          height: 0
+        });
+        camera.start();
+        videoElement.style.visibility="hidden";
+        </script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+  </th:block>
+<!--</th:block>-->
+<!--document.getElementById("input_video").style.visibility="none"-->
+</html>
+
+
+
+<!--코드 부산물-->
+<!--onFrame: async () => {-->
+<!--await holistic.send({image: videoElement});-->
+<!--},-->
