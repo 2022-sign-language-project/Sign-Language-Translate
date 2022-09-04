@@ -1,18 +1,21 @@
 from http.client import responses
+import json
 from unittest import result
-from flask import Flask, Response, jsonify, render_template, request
+from flask import Flask, Response, jsonify, make_response, render_template, request
+from flask_cors import CORS
 import numpy as np
 import os
 from matplotlib import pyplot as plt
 import time
-
 import requests
+
 import cv2
 import mediapipe as mp
 from scipy import stats
 from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
+CORS(app)
 sequence = []
 sentence = []
 predictions = []
@@ -118,7 +121,7 @@ def prob_viz(res, actions, input_frame, colors):
     return output_frame
 
 
-@app.route('/video_feed', methods=['GET'])
+@app.route('/video_feed')
 def video_feed():
     # st = "check"
     # url = 'http://127.0.0.1:5000/test'
@@ -130,15 +133,33 @@ def video_feed():
     return Response(result(), mimetype="multipart/x-mixed-replace; boundary=frame", status=status)
 
 
-@app.route('/test', methods=['POST'])
+global res
+
+
+@app.route('/test', methods=['GET', 'POST'])
 def test():
-    param = request.get_json()
-    return jsonify(param)
+    if request.method == 'GET':
+        global res
+        param = request.get_json()
+        # param = json.loads(request.get_json(), encoding='utf-8')
+        print("get in")
+        print(res)
+        # print(jsonify(param))
+        return res
+    if request.method == 'POST':
+        # param = request.get_json()
+        # print("IN")
+        info = request.get_json()
+
+        print(info)
+        res = make_response(json.dumps(info, ensure_ascii=False))
+        res.headers['Content-Type'] = 'application/json'
+        return res
 
 
-@app.route('/test/<param>')
-def test_echo(st):
-    return jsonify({"param": st})
+# @app.route('/test/<param>')
+# def test_echo(st):
+#     return jsonify({"param": st})
 
 
 @app.route('/')
@@ -219,11 +240,16 @@ def result():
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
 
-            url = 'http://127.0.0.1:5000/test'
-            params = {"predict": sentence}
-            response = requests.post(url=url, data=params)
-            print(response)
-            print(sentence)
+            # post 해주는 부분
+            # url = 'http://127.0.0.1:5500/test'
+            # params = {"predictoin": ' '.join(s for s in sentence)}
+            # requests.post(url=url, json=params)
+            #####
+
+            # response = requests.post(url=url, json=params)
+            # response2 = requests.get(url=url, data=params)
+            # print(params)
+            # print(response)
 
             # show in WebPage
             re, buffer = cv2.imencode('.jpg', image)
@@ -237,141 +263,4 @@ def result():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port="5000", debug=True, threaded=True)
-
-
-# def gen():
-#     # detection variables
-
-#     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-
-#     # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-#     # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-#     # fourcc = cv2.VideoWriter_fourcc(*"XVID")
-#     # fps = 30
-#     # out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height)))
-#     # out = cv2.VideoWriter(fourcc, fps)
-
-#     # Set mediapipe model
-#     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-#         while cap.isOpened():
-
-#             # Read
-#             ret, frame = cap.read()
-
-#             # Make detections
-#             image, results = mediapipe_detection(frame, holistic)
-
-#             # Draw landmarks
-#             draw_styled_landmarks(image, results)
-
-#             image = predict(image, results)
-#             # Show to screen
-#             image = cv2.resize(image, (1000, 800),
-#                                interpolation=cv2.INTER_LINEAR)
-
-#             # cv2.imshow('sign', image)
-#             # out.write(image)
-
-#             if cv2.waitKey(10) & 0xFF == ord('q'):
-#                 break
-
-#             re, buffer = cv2.imencode('.jpg', image)
-#             f = buffer.tobytes()
-#             yield (b'--frame\r\n'
-#                    b'Content-Type: image/jpeg\r\n\r\n' + f + b'\r\n\r\n')
-#         cap.release()
-#         # out.release()
-#         cv2.destroyAllWindows()
-
-
-# def result2():
-#     # detection variables
-#     # sequence = []
-#     # sentence = []
-#     # predictions = []
-#     # res= []
-#     # threshold = 0.88
-
-#     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-
-#     # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-#     # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-#     # fourcc = cv2.VideoWriter_fourcc(*"XVID")
-#     # fps = 30
-#     # out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height)))
-#     # out = cv2.VideoWriter(fourcc, fps)
-
-#     # Set mediapipe model
-#     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-#         while cap.isOpened():
-
-#             # Read
-#             ret, frame = cap.read()
-
-#             # Make detections
-#             image, results = mediapipe_detection(frame, holistic)
-
-#             # Draw landmarks
-#             draw_styled_landmarks(image, results)
-
-#             image, sentence = predict(image, results)
-
-#             cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
-#             cv2.putText(image, ' '.join(sentence), (3, 30),
-#                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-#             # Show to screen
-#             image = cv2.resize(image, (1000, 800),
-#                                interpolation=cv2.INTER_LINEAR)
-
-#             # cv2.imshow('sign', image)
-#             # out.write(image)
-
-#             if cv2.waitKey(10) & 0xFF == ord('q'):
-#                 break
-
-#             re, buffer = cv2.imencode('.jpg', image)
-#             f = buffer.tobytes()
-#             yield (b'--frame\r\n'
-#                    b'Content-Type: image/jpeg\r\n\r\n' + f + b'\r\n\r\n')
-#         cap.release()
-#         # out.release()
-#         cv2.destroyAllWindows()
-
-# @app.route('/predict', methods=['POST'])
-# @app.route('/predict')
-# def predict(image, results):
-#     sequence = []
-#     sentence = []
-#     predictions = []
-#     res = []
-#     threshold = 0.88
-
-#     # if request.method == 'POST':
-#     # Prediction logic
-#     keypoints = extract_keypoints(results)
-#     sequence.append(keypoints)
-#     sequence = sequence[-30:]
-
-#     if len(sequence) == 30:
-#         res = model.predict(np.expand_dims(sequence, axis=0))[0]
-#         # print(actions[np.argmax(res)])
-#         predictions.append(np.argmax(res))
-
-#     # Vizualize
-#         if np.unique(predictions[-10:])[0] == np.argmax(res):
-#             if res[np.argmax(res)] > threshold:
-
-#                 if len(sentence) > 0:
-#                     if actions[np.argmax(res)] != sentence[-1]:
-#                         sentence.append(actions[np.argmax(res)])
-#                 else:
-#                     sentence.append(actions[np.argmax(res)])
-
-#         if len(sentence) > 1:
-#             sentence = sentence[-1:]
-#         # Vizualize
-#         image = prob_viz(res, actions, image, colors)
-#     # return res, sequence, sentence, predictions
-#     return image, sentence
+    app.run(host="127.0.0.1", port="5500", debug=True, threaded=True)
