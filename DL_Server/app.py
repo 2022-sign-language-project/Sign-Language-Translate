@@ -13,10 +13,10 @@ import cv2
 import mediapipe as mp
 from scipy import stats
 from tensorflow.keras.models import load_model
-
+from werkzeug.utils import secure_filename
+import asyncio
 app = Flask(__name__)
 CORS(app)
-
 sequence = []
 sentence = []
 predictions = []
@@ -137,6 +137,22 @@ def video_feed():
 global res
 
 
+@app.route('/', methods=['POST'])
+async def video():
+    print("in")
+
+    info = request.files['file']
+    info.save('./videos/' + secure_filename(info.filename))
+    path = './videos/' + secure_filename(info.filename)
+    print(path)
+    await asyncio.wait([getResult(path)])
+
+    # print(info)
+
+    status = '200 OK'
+    return Response("", status=status)
+
+
 @app.route('/test', methods=['GET', 'POST'])
 def test():
     if request.method == 'GET':
@@ -168,6 +184,61 @@ def index():
     return render_template('index.html')
 
 
+async def getResult(path):
+    # detection variables
+    # sequence = []
+    # sentence = []
+    # predictions = []
+
+    global sequence
+    global sentence
+    global predictions
+    threshold = 0.88
+
+    # print("It'running")
+
+    cap = cv2.VideoCapture(path)
+
+    # Set mediapipe model
+    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+        while cap.isOpened():
+
+            # Read
+            ret, frame = cap.read()
+
+            # Make detections
+
+            # if ret:
+            image, results = mediapipe_detection(frame, holistic)
+
+            # Draw landmarks
+            # draw_styled_landmarks(image, results)
+
+            # Prediction logic
+            keypoints = extract_keypoints(results)
+            sequence.append(keypoints)
+            sequence = sequence[-30:]
+
+            if len(sequence) == 30:
+                res = model.predict(np.expand_dims(sequence, axis=0))[0]
+                print(actions[np.argmax(res)])
+                predictions.append(np.argmax(res))
+
+            # post 해주는 부분
+            # url = 'http://127.0.0.1:5500/test'
+            # params = {"predictoin": ' '.join(s for s in sentence)}
+            # requests.post(url=url, json=params)
+            #####
+
+            # response = requests.post(url=url, json=params)
+            # response2 = requests.get(url=url, data=params)
+            # print(params)
+            # print(response)
+
+        cap.release()
+        cv2.destroyAllWindows()
+
+
 def result():
     # detection variables
     # sequence = []
@@ -196,7 +267,8 @@ def result():
             ret, frame = cap.read()
 
             # Make detections
-            image, results = mediapipe_detection(frame, holistic)
+            if ret:
+                image, results = mediapipe_detection(frame, holistic)
 
             # Draw landmarks
             draw_styled_landmarks(image, results)
@@ -264,7 +336,10 @@ def result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5500", debug=True, threaded=True)
+    app.run(host="0.0.0.0", port="5500", debug=True,
+            threaded=True)
+    # app.run(host="0.0.0.0", port="5500", debug=True,
+    #         threaded=True, ssl_context=(cert.pem, key.pem))
 
 
 # def gen():
