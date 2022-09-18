@@ -31,17 +31,17 @@ public class DBManager {
         collection.insertOne(new Document("roomID",room.getRoomId())
                 .append("name",name));
     }
-    public List<Document> findAll(){
+    public List<ChatRoomDTO> findAll(){
         Iterator iterator = collection.find().iterator();
-        List<Document> result = new ArrayList<>();
+        List<ChatRoomDTO> result = new ArrayList<>();
         while(iterator.hasNext()){
-            result.add((Document) iterator.next());
+            result.add((ChatRoomDTO) iterator.next());
         }
         return result;
     }
-    public Document findById(String id){
-        Document doc = collection.find(eq("name",id)).first();
-        return doc;
+    public ChatRoomDTO findById(String id){
+        Document doc = collection.find(eq("roomID",id)).first();
+        return (ChatRoomDTO)doc.get("roomID");
     }
     public void delete(Document query){
         collection.deleteOne(query);

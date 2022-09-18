@@ -29,8 +29,7 @@ predictions = []
 # DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
 
 # Actions that we try to detect
-# actions = np.array(os.listdir(
-#     "C:/Users/LCM/Desktop/sign data/MP_DATA"))
+# actions = np.array(os.listdir("C:/Users/LCM/Desktop/sign data/MP_DATA"))
 actions = np.array(os.listdir("C:\\Users\\test\\2022\\sign_language\\MP_DATA_ALL"))
 
 ###############

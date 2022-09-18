@@ -19,16 +19,16 @@ public class ChatRoomRepository {
         dbManager=new DBManager();
     }
 
-    public List<Document> findAllRooms(){
+    public List<ChatRoomDTO> findAllRooms(){
 //        List<ChatRoomDTO> result = new ArrayList<>(chatRoomDTOMap.values());
         //채팅방 생성 순서 최근 순으로 반환
         // Collections.reverse(result);
-        List<Document> result = dbManager.findAll();
+        List<ChatRoomDTO> result = dbManager.findAll();
 
         return result;
     }
 
-    public Document findRoomById(String id){
+    public ChatRoomDTO findRoomById(String id){
 //        return chatRoomDTOMap.get(id);
         return dbManager.findById(id);
     }
