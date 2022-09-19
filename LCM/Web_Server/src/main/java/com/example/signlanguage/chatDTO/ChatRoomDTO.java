@@ -12,8 +12,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Data
-//@NoArgsConstructor
-//@AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection="Rooms")
 public class ChatRoomDTO {
     @Id
@@ -27,11 +27,11 @@ public class ChatRoomDTO {
         this.name = name;
     }
 
-    public static ChatRoomDTO create(String name){
-        ChatRoomDTO room = new ChatRoomDTO(name);
-
-        room.roomId = UUID.randomUUID().toString();
-        room.name = name;
-        return room;
-    }
+//    public static ChatRoomDTO create(String name){
+//        ChatRoomDTO room = new ChatRoomDTO();
+//
+//        room.roomId = UUID.randomUUID().toString();
+//        room.name = name;
+//        return room;
+//    }
 }
