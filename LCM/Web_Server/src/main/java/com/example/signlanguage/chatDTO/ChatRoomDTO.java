@@ -15,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection="Rooms")
+@Builder
 public class ChatRoomDTO {
     @Id
     private String roomId;
