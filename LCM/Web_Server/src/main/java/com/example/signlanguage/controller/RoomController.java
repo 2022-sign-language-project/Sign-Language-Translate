@@ -43,6 +43,11 @@ public class RoomController {
         model.addAttribute("room", room);
     }
 
+    @DeleteMapping("/delete")
+    public String deleteAllRooms(){
+        repository.deleteAll();
+        return "Deleted All";
+    }
 
 //    @PostMapping(value = "/addRoom")
 //    public String saveRoom(@RequestBody ChatRoomDTO room){

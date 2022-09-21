@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 //@ExtendWith(SpringExtension.class)
 //@ContextConfiguration(locations = {"file:/resources/application.properties"})
 //@Transactional
-@Rollback
+//@Rollback
 @RunWith(SpringRunner.class)
 @DataMongoTest
+//@SpringBootTest
 public class RoomControllerTest {
 
     @Autowired
@@ -73,5 +75,14 @@ public class RoomControllerTest {
 
         assertEquals(room.getRoomId(), findRoom.getRoomId());
         assertEquals(room.getName(), findRoom.getName());
+    }
+
+    @Test
+    void deleteAllRooms(){
+        repository.deleteAll();
+
+        List<ChatRoomDTO> findRooms=repository.findAll();
+
+        assertEquals(findRooms.size(), 0);
     }
 }
