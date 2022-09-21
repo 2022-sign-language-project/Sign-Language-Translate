@@ -3,11 +3,11 @@ package com.example.signlanguage.controller;
 import com.example.signlanguage.chatDTO.ChatRoomDTO;
 import com.example.signlanguage.repository.RoomRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -16,8 +16,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 //@ExtendWith(SpringExtension.class)
 //@ContextConfiguration(locations = {"file:/resources/application.properties"})
-@Transactional
+//@Transactional
 @Rollback
+@RunWith(SpringRunner.class)
+@DataMongoTest
 public class RoomControllerTest {
 
     @Autowired
@@ -42,7 +44,7 @@ public class RoomControllerTest {
 
         List<ChatRoomDTO> findRooms=repository.findAll();
 
-        assertEquals(findRooms.size(), equals(INSERT_SIZE));
+        assertEquals(findRooms.size(), INSERT_SIZE);
     }
     void insertFindAllTestData(String NAME, int INSERT_SIZE) {
         for (int i = 0; i < INSERT_SIZE; ++i) {
@@ -57,8 +59,8 @@ public class RoomControllerTest {
 
         ChatRoomDTO findRoom = repository.findById(room.getRoomId()).get();
 
-        assertEquals(room.getRoomId(), equals(findRoom.getRoomId()));
-        assertEquals(room.getName(), equals(findRoom.getName()));
+        assertEquals(room.getRoomId(), findRoom.getRoomId());
+        assertEquals(room.getName(), findRoom.getName());
 
     }
 
@@ -69,7 +71,7 @@ public class RoomControllerTest {
 
         ChatRoomDTO findRoom = repository.findById(room.getRoomId()).get();
 
-        assertEquals(room.getRoomId(), equals(findRoom.getRoomId()));
-        assertEquals(room.getName(), equals(findRoom.getName()));
+        assertEquals(room.getRoomId(), findRoom.getRoomId());
+        assertEquals(room.getName(), findRoom.getName());
     }
 }
