@@ -26,12 +26,11 @@ predictions = []
 ###############
 # Path for exported data, numpy arrays
 
-DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
+# DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
 
 # Actions that we try to detect
-actions = np.array(os.listdir(
-    "C:/Users/LCM/Desktop/sign data/MP_DATA"))
-
+# actions = np.array(os.listdir("C:/Users/LCM/Desktop/sign data/MP_DATA"))
+actions = np.array(os.listdir("C:\\Users\\test\\2022\\sign_language\\MP_DATA_ALL"))
 
 ###############
 
@@ -105,8 +104,8 @@ def extract_keypoints(results):
     ) if results.right_hand_landmarks else np.zeros(21*3)
     return np.concatenate([pose, face, lh, rh])
 
-
-model = load_model('20220606_90.h5')
+# model = load_model('20220606_90.h5')
+model = load_model('C:/Users/test/2022/sign_language/20220606_90.h5')
 
 colors = [(245, 117, 16) for _ in range(actions.size)]
 
