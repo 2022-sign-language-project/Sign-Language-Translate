@@ -1,27 +1,28 @@
-document.addEventListener("DOMContentLoaded", () => {
-  new App();
+const video = document.querySelector(".test_video");
+let videoMediaStream = null;
+
+navigator.mediaDevices
+.getUserMedia({
+    audio: false,
+    video: {
+        width:360,
+        height:240,
+    }.
+})
+.then((stream) => {
+
+  video.srcObject = stream;
+  video.onloadedmetadata = function(){
+    video.play();
+  };
+  videoMediaStream = stream;
+  console.log(stream);
+})
+.catch(function (error) {
+  console.log("Something went wrong!");
+  console.log(error);
+  return;
 });
 
-class App {
-  constructor() {
-    const video = document.querySelector("#video");
 
-    if (navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          // function 의 this와 화살표 함수의 this 가 다름
-          video.srcObject = stream;
-        })
-        .catch(function (error) {
-          console.log("Something went wrong!");
-          console.log(error);
-          return;
-        });
-    }
 
-    video.addEventListener("loadedmetadata", () => {
-      window.requestAnimationFrame(this.draw.bind(this));
-    });
-  }
-}
