@@ -1,19 +1,33 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <!--<meta charset="utf-8">-->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<script src="../js/room.js?ver=2"></script>
 <!--<th:block th:replace="~{/layout/basic :: setContent(~{this :: content})}">-->
   <th:block th:fragment="content">
 
-    <div>
-      <video autoplay="true" id="videoElement"></video>
-      <button id="start_btn">녹화 시작</button>
-      <button id="end_btn">녹화 종료</button>
-      <button id="download-btn">다운로드</button>
-    </div>
+<!--    <div class="container">-->
+<!--        <video class="input_video" autoplay="autoplay"></video>-->
+<!--        <canvas class="output_canvas" width="800px" height="450px"></canvas>-->
+<!--    </div>-->
+
+<!--  쓰는 부분    -->
+<!--    <div id = "video" style="border: solid; width:45%; height:30%;">-->
+
+<!--    </div>-->
+      <div>
+          <video autoplay="true" id="videoElement"></video>
+          <button id="start_btn">녹화 시작</button>
+          <button id="end_btn">녹화 종료</button>
+          <button id="download-btn">다운로드</button>
+      </div>
+
+
 
 <!--    <div th:insert="http://localhost:5500/"></div>-->
 
@@ -34,14 +48,14 @@
       </div>
       <div class="col-6"></div>
     </div>
-    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
     <script th:inline="javascript">
 
 
             $(document).ready(function(){
 
-               $("#video").load("http://127.0.0.1:5500 #video");
-
+              $("#video").load("http://127.0.0.1:5500 #video");
+<!--              $("#video").load("http://58.233.13.150:5500/ #video");-->
               function uuidv4() {
                 return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
                   (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -83,7 +97,7 @@
                            $("#msgArea").append(str);
                        }
 
-                       $("#msgArea").append(str);
+                       <!--$("#msgArea").append(str);-->
                    });
 
                    //3. send(path, header, message)로 메세지를 보낼 수 있음
