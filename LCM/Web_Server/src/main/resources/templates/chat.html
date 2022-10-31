@@ -61,10 +61,23 @@
             websocket.onopen = onOpen;
             websocket.onclose = onClose;
 
+            var re_send = "";
+
             function send(){
 
                 let msg = document.getElementById("msg");
 
+                var div=document.createElement('div');
+
+			    div.style["width"]="auto";
+			    div.style["word-wrap"]="break-word";
+			    div.style["display"]="inline-block";
+			    div.style["background-color"]="#fcfcfc";
+			    div.style["border-radius"]="3px";
+			    div.style["padding"]="3px";
+			    div.style["margin-left"]="3px";
+
+			    div.innerHTML = msg.value;
                 console.log(username + ":" + msg.value);
                 websocket.send(username + ":" + msg.value);
                 msg.value = '';
