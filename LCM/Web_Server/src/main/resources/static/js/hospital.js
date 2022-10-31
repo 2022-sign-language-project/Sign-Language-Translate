@@ -7,7 +7,7 @@ navigator.mediaDevices
     video: {
         width:360,
         height:240,
-    }.
+    }
 })
 .then((stream) => {
 

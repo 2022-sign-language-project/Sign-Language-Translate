@@ -7,7 +7,65 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
 <script src="../js/room.js?ver=2"></script>
+<link rel="stylesheet" href="../css/room.css">
+
+<style>
+    /*.chat_wrap {background-color:#acc2d2; border:1px solid #999; width:600px; padding:5px; font-size:13px; color:#333}*/
+    /*.chat_wrap .inner{background-color:#acc2d2; border-radius:5px; padding:10px; overflow-y:scroll;height: 710px;}*/
+    /*.chat_wrap .item{margin-top:15px}*/
+    /*.chat_wrap .item:first-child{margin-top:0px}*/
+    /*.chat_wrap .item .box{display:inline-block; max-width:250px; position:relative}*/
+    /*.chat_wrap .item .box::before{content:""; position:absolute; left:-8px; top:9px; border-top:0px solid transparent; border-bottom:8px solid transparent;border-right:8px solid #fff;}*/
+    /*.chat_wrap .item .box .msg {background:#fff; border-radius:10px; padding:8px; font-size:15px;text-align:left}*/
+    /*.chat_wrap .item .box .time {font-size:11px; color:#999; position:absolute; right: -75px; bottom:5px; width:70px}*/
+    /*.chat_wrap .chat_send {margin: 10px auto; display: flex;}*/
+    /*.chat_wrap .chat_send #message {text-align:right; width:100%;}*/
+    /*.chat_wrap .chat_send #button-send {text-align:right; width:15%; text-align : center; margin: 0px 2%;}*/
+    /*.chat_wrap .item.msg .box::before{left:auto; right:-8px; border-left:8px solid #fee600; border-right:0;}*/
+    /*.chat_wrap .item.msg .box .msg{background:#fee600}*/
+    /*.chat_wrap .item.msg .box .time{right:auto; left:-75px}*/
+    /*.chat_wrap .item .box{transition:all .3s ease-out; margin:0 0 0 20px;opacity:0}*/
+    /*.chat_wrap .item.msg .box{transition:all .3s ease-out; margin:0 20px 0 0;}*/
+    /*.chat_wrap .item.on .box{margin:0; opacity: 1;}*/
+
+    /*input[type="text"]{border:0; width:100%;background:#ddd; border-radius:5px; height:70px; padding-left:5px; box-sizing:border-box; margin-top:5px}*/
+    /*input[type="text"]::placeholder{color:#999}*/
+</style>
+<script>
+    // $(function(){
+    //     $("input[type='text']").keypress(function(e){
+    //         if(e.keyCode == 13 && $(this).val().length){
+    //             var _val = $(this).val();
+    //             var _class = $(this).attr("class");
+    //             $(this).val('');
+    //             var _tar = $(".chat_wrap .inner").append('<div class="item '+_class+'"><div class="box"><p class="msg">'+_val+'</p><span class="time">'+currentTime()+'</span></div></div>');
+    //
+    //             var lastItem = $(".chat_wrap .inner").find(".item:last");
+    //             setTimeout(function(){
+    //                 lastItem.addClass("on");
+    //             },10);
+    //
+    //             var position = lastItem.position().top + $(".chat_wrap .inner").scrollTop();
+    //             console.log(position);
+    //
+    //             $(".chat_wrap .inner").stop().animate({scrollTop:position},500);
+    //         }
+    //     });
+    //
+    // });
+
+    var currentTime = function(){
+        var date = new Date();
+        var hh = date.getHours();
+        var mm = date.getMinutes();
+        var apm = hh >12 ? "오후":"오전";
+        var ct = apm + " "+hh+":"+mm+"";
+        return ct;
+    }
+
+</script>
 <!--<th:block th:replace="~{/layout/basic :: setContent(~{this :: content})}">-->
   <th:block th:fragment="content">
 
@@ -31,23 +89,36 @@
 
 <!--    <div th:insert="http://localhost:5500/"></div>-->
 
-    <div class="container">
-      <div class="col-6">
-        <h1>[[${room.name}]]</h1>
-      </div>
-      <div>
-        <div id="msgArea" class="col"></div>
-        <div class="col-6">
-          <div class="input-group mb-3">
-            <input type="text" id="msg" class="form-control">
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary" type="button" id="button-send">전송</button>
-            </div>
+      <div class="chat_wrap">
+          <h1>[[${room.name}]]</h1>
+          <div class="inner">
           </div>
-        </div>
+
+          <div class="chat_send">
+              <input type="text" id="message" placeholder="내용 입력">
+              <button type="button" id="button-send">전송</button>
+          </div>
+<!--          <input type="text" class="yourmsg" placeholder="내용 입력">-->
       </div>
-      <div class="col-6"></div>
-    </div>
+
+<!--      이전 채팅방 코드-->
+<!--    <div class="container">-->
+<!--      <div class="col-6">-->
+<!--        <h1>[[${room.name}]]</h1>-->
+<!--      </div>-->
+<!--      <div>-->
+<!--        <div id="msgArea" class="col"></div>-->
+<!--        <div class="col-6">-->
+<!--          <div class="input-group mb-3">-->
+<!--            <input type="text" id="msg" class="form-control">-->
+<!--            <div class="input-group-append">-->
+<!--              <button class="btn btn-outline-secondary" type="button" id="button-send">전송</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="col-6"></div>-->
+<!--    </div>-->
 
     <script th:inline="javascript">
 
@@ -55,7 +126,7 @@
             $(document).ready(function(){
 
               $("#video").load("http://127.0.0.1:5500 #video");
-<!--              $("#video").load("http://58.233.13.150:5500/ #video");-->
+              // $("#video").load("http://58.233.13.150:5500/ #video");
               function uuidv4() {
                 return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
                   (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -75,26 +146,45 @@
                 stomp.connect({}, function (){
                    console.log("STOMP Connection")
 
-                   //4. subscribe(path, callback)으로 메세지를 받을 수 있음
+                   //3. subscribe(path, callback)으로 메세지를 받을 수 있음
                    stomp.subscribe("/sub/chat/room/" + roomId, function (chat) {
                        var content = JSON.parse(chat.body);
 
                        var writer = content.writer;
                        var str = '';
 
+                       // 받아온 메세지 화면에 출력
+                       let put_message = function () {
+                           var _class = $(this).attr("class");
+                           $(this).val('');
+                           $(".chat_wrap .inner").append('<div class="item '+_class+'"><div id = "writer">'+ writer +'</div><div class="box"><p class="msg">'+content.message+'</p><span class="time">'+currentTime()+'</span></div></div>');
+
+                           var lastItem = $(".chat_wrap .inner").find(".item:last");
+                           setTimeout(function(){
+                               lastItem.addClass("on");
+                           },10);
+
+                           var position = lastItem.position().top + $(".chat_wrap .inner").scrollTop();
+                           // console.log(position);
+
+                           $(".chat_wrap .inner").stop().animate({scrollTop:position},500);
+                       }
+
                        if(writer === username){
-                           str = "<div class='col-6'>";
-                           str += "<div class='alert alert-secondary'>";
-                           str += "<b>" + writer + " : " + content.message + "</b>";
-                           str += "</div></div>";
-                           $("#msgArea").append(str);
+                            put_message();
+                           // str = "<div class='col-6'>";
+                           // str += "<div class='alert alert-secondary'>";
+                           // str += "<b>" + writer + " : " + content.message + "</b>";
+                           // str += "</div></div>";
+                           // $("#msgArea").append(str);
                        }
                        else{
-                           str = "<div class='col-6'>";
-                           str += "<div class='alert alert-warning'>";
-                           str += "<b>" + writer + " : " + content.message + "</b>";
-                           str += "</div></div>";
-                           $("#msgArea").append(str);
+                           put_message();
+                           // str = "<div class='col-6'>";
+                           // str += "<div class='alert alert-warning'>";
+                           // str += "<b>" + writer + " : " + content.message + "</b>";
+                           // str += "</div></div>";
+                           // $("#msgArea").append(str);
                        }
 
                        <!--$("#msgArea").append(str);-->
@@ -104,12 +194,26 @@
                    stomp.send('/pub/chat/enter', {}, JSON.stringify({roomId: roomId, writer: username}))
                 });
 
-                $("#button-send").on("click", function(e){
-                    var msg = document.getElementById("msg");
+                let send_message = function () {
+                    var msg = document.getElementById("message");
 
                     console.log(username + ":" + msg.value);
                     stomp.send('/pub/chat/message', {}, JSON.stringify({roomId: roomId, message: msg.value, writer: username}));
                     msg.value = '';
+                }
+
+                // 엔터 치면 메세지 전송
+                $(function(){
+                    $("input[type='text']").keypress(function(e){
+                        if(e.keyCode == 13 && $(this).val().length){
+                            send_message();
+                        }
+                    });
+
+                });
+                // 전송 버튼 누르면 전송
+                $("#button-send").on("click", function(e){
+                    send_message();
                 });
             });
         </script>
