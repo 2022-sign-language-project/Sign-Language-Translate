@@ -11382,3 +11382,14 @@ header.masthead .bg-circle-4 {
     font-size: 4rem;
   }
 }
+.background_image {
+    background-image:url('../images/hospital_background.jpg');background-repeat: no-repeat;
+}
+.message {
+    border-radius: 5px;
+    padding: 0.5rem;
+    font-size: 12px;
+    margin: 0 5px;
+    flex: 7;
+    background: #ffeb33;
+}
