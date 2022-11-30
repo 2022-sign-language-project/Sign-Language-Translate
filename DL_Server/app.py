@@ -14,7 +14,9 @@ import mediapipe as mp
 from scipy import stats
 from tensorflow.keras.models import load_model
 from werkzeug.utils import secure_filename
+from PIL import ImageFont, ImageDraw, Image
 import asyncio
+
 app = Flask(__name__)
 CORS(app)
 sequence = []
@@ -26,13 +28,34 @@ predictions = []
 ###############
 # Path for exported data, numpy arrays
 
-# DATA_PATH = os.path.join("C:/Users/LCM/Desktop/sign data/MP_DATA")
+DATA_PATH = os.path.join("DL_Server/MP_Data")
 
 # Actions that we try to detect
-# actions = np.array(os.listdir("C:/Users/LCM/Desktop/sign data/MP_DATA"))
-actions = np.array(os.listdir("C:\\Users\\test\\2022\\sign_language\\MP_DATA_ALL"))
+actions = np.array(os.listdir(
+    "DL_Server/MP_Data"))
+
 
 ###############
+def createkorean():
+    kor = {}
+    kor['bruise'] = "멍이 들었습니다."
+    kor['cough'] = "기침을 합니다."
+    kor['default'] = "기본자세"
+    kor['digestion'] = "소화"
+    kor['heat'] = "열이 납니다."
+    kor['hello'] = "안녕하세요"
+    kor['injection'] = "주사"
+    kor['muscle'] = "근육"
+    kor['none'] = "없습니다"
+    kor['sick'] = "아프다"
+    kor['swell_up'] = "부었습니다."
+    kor['thanks'] = "감사합니다."
+
+    return kor
+
+
+font = ImageFont.truetype('fonts/SCDream6.otf', 27)
+
 
 mp_holistic = mp.solutions.holistic  # Holistic model
 mp_drawing = mp.solutions.drawing_utils  # Drawing utilities
@@ -104,8 +127,8 @@ def extract_keypoints(results):
     ) if results.right_hand_landmarks else np.zeros(21*3)
     return np.concatenate([pose, face, lh, rh])
 
-# model = load_model('20220606_90.h5')
-model = load_model('C:/Users/test/2022/sign_language/20220606_90.h5')
+
+model = load_model('20220606_90.h5')
 
 colors = [(245, 117, 16) for _ in range(actions.size)]
 
@@ -123,12 +146,6 @@ def prob_viz(res, actions, input_frame, colors):
 
 @app.route('/video_feed')
 def video_feed():
-    # st = "check"
-    # url = 'http://127.0.0.1:5000/test'
-    # params = {"st": st}
-    # response = requests.post(url=url, data=params)
-    # print(response)
-    # # print(sentence)
     status = '200 OK'
     return Response(result(), mimetype="multipart/x-mixed-replace; boundary=frame", status=status)
 
@@ -141,7 +158,7 @@ async def video():
     print("in")
 
     info = request.files['file']
-    info.save('./videos/' + secure_filename(info.filename))
+    # info.save('./videos/' + secure_filename(info.filename))
     path = './videos/' + secure_filename(info.filename)
     print(path)
     await asyncio.wait([getResult(path)])
@@ -173,90 +190,32 @@ def test():
         return res
 
 
-# @app.route('/test/<param>')
-# def test_echo(st):
-#     return jsonify({"param": st})
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
-async def getResult(path):
-    # detection variables
-    # sequence = []
-    # sentence = []
-    # predictions = []
-
-    global sequence
-    global sentence
-    global predictions
-    threshold = 0.88
-
-    # print("It'running")
-
-    cap = cv2.VideoCapture(path)
-
-    # Set mediapipe model
-    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-        while cap.isOpened():
-
-            # Read
-            ret, frame = cap.read()
-
-            # Make detections
-
-            # if ret:
-            image, results = mediapipe_detection(frame, holistic)
-
-            # Draw landmarks
-            # draw_styled_landmarks(image, results)
-
-            # Prediction logic
-            keypoints = extract_keypoints(results)
-            sequence.append(keypoints)
-            sequence = sequence[-30:]
-
-            if len(sequence) == 30:
-                res = model.predict(np.expand_dims(sequence, axis=0))[0]
-                print(actions[np.argmax(res)])
-                predictions.append(np.argmax(res))
-
-            # post 해주는 부분
-            # url = 'http://127.0.0.1:5500/test'
-            # params = {"predictoin": ' '.join(s for s in sentence)}
-            # requests.post(url=url, json=params)
-            #####
-
-            # response = requests.post(url=url, json=params)
-            # response2 = requests.get(url=url, data=params)
-            # print(params)
-            # print(response)
-
-        cap.release()
-        cv2.destroyAllWindows()
-
-
 def result():
-    # detection variables
-    # sequence = []
-    # sentence = []
-    # predictions = []
-
     global sequence
     global sentence
     global predictions
     threshold = 0.88
+
+    kor = createkorean()
 
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-    # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    # fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    # fps = 30
-    # out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height)))
-    # out = cv2.VideoWriter(fourcc, fps)
+    height, width = 1000, 1000
+    outline = cv2.imread('y_512_2.png')
+    size = 1000
+    outline = cv2.resize(outline, (size, size))
+    img_height, img_width, _ = outline.shape
+
+    x, y = int(height/2 - img_height/2), int(width/2 - img_width/2)
+    img2grey = cv2.cvtColor(outline, cv2.COLOR_BGR2GRAY)
+    ret, mask = cv2.threshold(img2grey, 175, 255, cv2.THRESH_BINARY)
+    mask_inv = cv2.bitwise_not(mask)
+    forground_with_mask = cv2.bitwise_and(outline, outline, mask=mask)
 
     # Set mediapipe model
     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
@@ -270,7 +229,7 @@ def result():
                 image, results = mediapipe_detection(frame, holistic)
 
             # Draw landmarks
-            draw_styled_landmarks(image, results)
+            # draw_styled_landmarks(image, results)
 
             # Prediction logic
             keypoints = extract_keypoints(results)
@@ -299,29 +258,28 @@ def result():
                 image = prob_viz(res, actions, image, colors)
 
             cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
-            cv2.putText(image, ' '.join(sentence), (3, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-            # Show to screen
-            image = cv2.resize(image, (1000, 800),
+            if len(sentence) > 0:
+                image = Image.fromarray(image)
+                draw = ImageDraw.Draw(image)
+                draw.text(xy=(10, 10), text=kor[sentence[0]],
+                          font=font, fill=(255, 255, 255))
+                image = np.array(image)
+
+            image = cv2.resize(image, (1000, 1000),
                                interpolation=cv2.INTER_LINEAR)
 
-            # cv2.imshow('sign', image)
-            # out.write(image)
+            imgArea = image[y:y+img_height, x:x+img_width]
+
+            background_with_mask = cv2.bitwise_and(
+                imgArea, imgArea, mask=mask_inv)
+
+            final_img = cv2.add(forground_with_mask, background_with_mask)
+
+            image[y:y+img_height, x:x+img_width] = final_img
 
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
-
-            # post 해주는 부분
-            # url = 'http://127.0.0.1:5500/test'
-            # params = {"predictoin": ' '.join(s for s in sentence)}
-            # requests.post(url=url, json=params)
-            #####
-
-            # response = requests.post(url=url, json=params)
-            # response2 = requests.get(url=url, data=params)
-            # print(params)
-            # print(response)
 
             # show in WebPage
             re, buffer = cv2.imencode('.jpg', image)
@@ -335,144 +293,7 @@ def result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="5500", debug=True,
-            threaded=True)
     # app.run(host="0.0.0.0", port="5500", debug=True,
-    #         threaded=True, ssl_context=(cert.pem, key.pem))
-
-
-# def gen():
-#     # detection variables
-
-#     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-
-#     # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-#     # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-#     # fourcc = cv2.VideoWriter_fourcc(*"XVID")
-#     # fps = 30
-#     # out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height)))
-#     # out = cv2.VideoWriter(fourcc, fps)
-
-#     # Set mediapipe model
-#     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-#         while cap.isOpened():
-
-#             # Read
-#             ret, frame = cap.read()
-
-#             # Make detections
-#             image, results = mediapipe_detection(frame, holistic)
-
-#             # Draw landmarks
-#             draw_styled_landmarks(image, results)
-
-#             image = predict(image, results)
-#             # Show to screen
-#             image = cv2.resize(image, (1000, 800),
-#                                interpolation=cv2.INTER_LINEAR)
-
-#             # cv2.imshow('sign', image)
-#             # out.write(image)
-
-#             if cv2.waitKey(10) & 0xFF == ord('q'):
-#                 break
-
-#             re, buffer = cv2.imencode('.jpg', image)
-#             f = buffer.tobytes()
-#             yield (b'--frame\r\n'
-#                    b'Content-Type: image/jpeg\r\n\r\n' + f + b'\r\n\r\n')
-#         cap.release()
-#         # out.release()
-#         cv2.destroyAllWindows()
-
-
-# def result2():
-#     # detection variables
-#     # sequence = []
-#     # sentence = []
-#     # predictions = []
-#     # res= []
-#     # threshold = 0.88
-
-#     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-
-#     # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-#     # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-#     # fourcc = cv2.VideoWriter_fourcc(*"XVID")
-#     # fps = 30
-#     # out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height)))
-#     # out = cv2.VideoWriter(fourcc, fps)
-
-#     # Set mediapipe model
-#     with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-#         while cap.isOpened():
-
-#             # Read
-#             ret, frame = cap.read()
-
-#             # Make detections
-#             image, results = mediapipe_detection(frame, holistic)
-
-#             # Draw landmarks
-#             draw_styled_landmarks(image, results)
-
-#             image, sentence = predict(image, results)
-
-#             cv2.rectangle(image, (0, 0), (640, 40), (245, 117, 16), -1)
-#             cv2.putText(image, ' '.join(sentence), (3, 30),
-#                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-#             # Show to screen
-#             image = cv2.resize(image, (1000, 800),
-#                                interpolation=cv2.INTER_LINEAR)
-
-#             # cv2.imshow('sign', image)
-#             # out.write(image)
-
-#             if cv2.waitKey(10) & 0xFF == ord('q'):
-#                 break
-
-#             re, buffer = cv2.imencode('.jpg', image)
-#             f = buffer.tobytes()
-#             yield (b'--frame\r\n'
-#                    b'Content-Type: image/jpeg\r\n\r\n' + f + b'\r\n\r\n')
-#         cap.release()
-#         # out.release()
-#         cv2.destroyAllWindows()
-
-# @app.route('/predict', methods=['POST'])
-# @app.route('/predict')
-# def predict(image, results):
-#     sequence = []
-#     sentence = []
-#     predictions = []
-#     res = []
-#     threshold = 0.88
-
-#     # if request.method == 'POST':
-#     # Prediction logic
-#     keypoints = extract_keypoints(results)
-#     sequence.append(keypoints)
-#     sequence = sequence[-30:]
-
-#     if len(sequence) == 30:
-#         res = model.predict(np.expand_dims(sequence, axis=0))[0]
-#         # print(actions[np.argmax(res)])
-#         predictions.append(np.argmax(res))
-
-#     # Vizualize
-#         if np.unique(predictions[-10:])[0] == np.argmax(res):
-#             if res[np.argmax(res)] > threshold:
-
-#                 if len(sentence) > 0:
-#                     if actions[np.argmax(res)] != sentence[-1]:
-#                         sentence.append(actions[np.argmax(res)])
-#                 else:
-#                     sentence.append(actions[np.argmax(res)])
-
-#         if len(sentence) > 1:
-#             sentence = sentence[-1:]
-#         # Vizualize
-#         image = prob_viz(res, actions, image, colors)
-#     # return res, sequence, sentence, predictions
-#     return image, sentence
+    #         threaded=True)
+    app.run(host="0.0.0.0", port="5500", debug=True,
+            threaded=True, ssl_context=(cert.pem, key.pem))
