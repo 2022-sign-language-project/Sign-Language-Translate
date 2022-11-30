@@ -6,3 +6,7 @@
 
 ### Deep Learning Server
 - [DL Server](https://github.com/2022-sign-language-project/Sign-Language-Translate/blob/master/DL_Server/app.py)
+
+
+### Web Server
+- [Web Server](https://github.com/2022-sign-language-project/Sign-Language-Translate/tree/master/LCM/Web_Server)
