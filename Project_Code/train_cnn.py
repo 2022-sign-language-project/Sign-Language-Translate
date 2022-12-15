@@ -1,12 +1,10 @@
 from sklearn.metrics import multilabel_confusion_matrix, accuracy_score
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.layers import LSTM, Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Activation
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import load_model
 import cv2
 import numpy as np
 import os
@@ -66,6 +64,7 @@ print(y_test.shape)
 log_dir = os.path.join('Logs')
 tb_callback = TensorBoard(log_dir=log_dir)
 
+# Create model
 model = Sequential()
 
 model.add(Conv2D(32, (3, 3), activation='relu'))
@@ -91,14 +90,16 @@ model.add(Dense(actions.shape[0], activation='softmax'))
 model.compile(optimizer='Adam', loss='categorical_crossentropy',
               metrics=['categorical_accuracy'])
 
+# Train model
 model.fit(X_train, y_train, epochs=700, callbacks=[tb_callback])
 
+# Check model
 model.summary()
-
 
 # Save model
 model.save('20220606_90.h5')
 
+# Test model
 model = load_model('20220606_90.h5')
 
 yhat = model.predict(X_test)
