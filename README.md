@@ -15,7 +15,7 @@
 - [2학기 최종보고서](https://github.com/2022-sign-language-project/Sign-Language-Translate/blob/master/%EC%A0%9C%EC%B6%9C%EB%AC%BC/2%ED%95%99%EA%B8%B0/11%EC%A1%B0%20-%20Sign_Language.txt(%EC%88%98%ED%99%94%20%ED%86%B5%EC%97%AD%20%EC%9B%B9%EC%84%9C%EB%B9%84%EC%8A%A4)%20-%20%EB%AC%B8%EC%A7%80%EC%98%81%20%EB%B0%95%EC%8A%B9%EB%AF%BC%20%EC%9D%B4%EC%B0%AC%EB%AF%BC.zip)   
 
 
-- [활동지](https://github.com/2022-sign-language-project/Sign-Language-Translate/tree/master/%ED%99%9C%EB%8F%99%EB%B3%B4%EA%B3%A0)
+### [활동지](https://github.com/2022-sign-language-project/Sign-Language-Translate/tree/master/%ED%99%9C%EB%8F%99%EB%B3%B4%EA%B3%A0)
 
 
 ### Deep Learning Server
